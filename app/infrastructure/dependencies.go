@@ -20,7 +20,7 @@ type Dependencies struct {
 
 func InitDependencies() *Dependencies {
 	// Conexión a RabbitMQ (ajusta la URL de conexión según tu entorno)
-	conn, err := amqp.Dial("amqp://Sujey:calmar58@34.194.130.32/")
+	conn, err := amqp.Dial("amqp://ferni:9321@23.23.242.80/")
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
 	}
