@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/SUJEY/PUBLICADOR/app/application/usecase"
-	"github.com/SUJEY/PUBLICADOR/app/infrastructure/adapters/simulator"
+	"github.com/SUJEY/PUBLICADOR/app/domain"
 )
 
 type LightHandler struct {
@@ -17,15 +17,23 @@ func NewLightHandler(useCase *usecase.LightUseCase) *LightHandler {
 }
 
 func (h *LightHandler) HandleLight(w http.ResponseWriter, r *http.Request) {
-	luminosity := simulator.SimulateLight()
 
-	if err := h.useCase.Execute(luminosity); err != nil {
+	var sensor domain.LightSensor
+	if err := json.NewDecoder(r.Body).Decode(&sensor); err != nil {
+		http.Error(w, "Error decoding request body", http.StatusBadRequest)
+		return
+	}
+
+	
+	if err := h.useCase.Execute(sensor.Luminosity); err != nil {
 		http.Error(w, "Error processing light sensor", http.StatusInternalServerError)
 		return
 	}
 
+
 	response := map[string]interface{}{
-		"luminosity": luminosity,
+		"luminosity": sensor.Luminosity,  
+		"deviceToken": sensor.DeviceToken, 
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)

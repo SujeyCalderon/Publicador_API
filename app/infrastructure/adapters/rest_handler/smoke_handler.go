@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/SUJEY/PUBLICADOR/app/application/usecase"
-	"github.com/SUJEY/PUBLICADOR/app/infrastructure/adapters/simulator"
+	"github.com/SUJEY/PUBLICADOR/app/domain"
 )
 
 type SmokeHandler struct {
@@ -17,17 +17,24 @@ func NewSmokeHandler(useCase *usecase.SmokeUseCase) *SmokeHandler {
 }
 
 func (h *SmokeHandler) HandleSmoke(w http.ResponseWriter, r *http.Request) {
-	smokeLevel, alarm := simulator.SimulateSmoke()
+   
+    var sensor domain.SmokeSensor
+    if err := json.NewDecoder(r.Body).Decode(&sensor); err != nil {
+        http.Error(w, "Error decoding request body", http.StatusBadRequest)
+        return
+    }
 
-	if err := h.useCase.Execute(smokeLevel, alarm); err != nil {
-		http.Error(w, "Error processing smoke sensor", http.StatusInternalServerError)
-		return
-	}
+  
+    if err := h.useCase.Execute(sensor.SmokeLevel, sensor.Alarm); err != nil {
+        http.Error(w, "Error processing smoke sensor", http.StatusInternalServerError)
+        return
+    }
 
-	response := map[string]interface{}{
-		"smoke_level": smokeLevel,
-		"alarm":       alarm,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+   
+    response := map[string]interface{}{
+        "smoke_level": sensor.SmokeLevel, 
+        "alarm":       sensor.Alarm,      
+    }
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(response)
 }

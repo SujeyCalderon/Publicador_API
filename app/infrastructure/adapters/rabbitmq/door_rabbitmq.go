@@ -20,12 +20,12 @@ func NewDoorRabbitMQ(conn *amqp.Connection, queue string) (*DoorRabbitMQ, error)
 		return nil, err
 	}
 	_, err = ch.QueueDeclare(
-		queue, // nombre de la cola
-		true,  // durable
-		false, // delete when unused
-		false, // exclusive
-		false, // no-wait
-		nil,   // arguments
+		queue, 
+		true,  
+		false, 
+		false, 
+		false, 
+		nil,   
 	)
 	if err != nil {
 		return nil, err
@@ -43,8 +43,8 @@ func (r *DoorRabbitMQ) Publish(sensor domain.DoorSensor) error {
 		return err
 	}
 	err = r.channel.Publish(
-		"",       // exchange
-		r.queue,  // routing key = nombre de la cola
+		"",       
+		r.queue,  
 		false,
 		false,
 		amqp.Publishing{

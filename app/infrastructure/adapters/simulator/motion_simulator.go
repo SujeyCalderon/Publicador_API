@@ -5,8 +5,7 @@ import (
 	"time"
 )
 
-// SimulateMotion simula la detección de movimiento y la intensidad.
-// Devuelve un valor booleano y un valor de intensidad (entre 0 y 1).
+
 func SimulateMotion() (bool, float64) {
 	rand.Seed(time.Now().UnixNano())
 	motionDetected := rand.Intn(2) == 1

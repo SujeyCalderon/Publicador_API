@@ -3,9 +3,10 @@ package rest_handler
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/SUJEY/PUBLICADOR/app/application/usecase"
-	"github.com/SUJEY/PUBLICADOR/app/infrastructure/adapters/simulator"
+	"github.com/SUJEY/PUBLICADOR/app/domain"
 )
 
 type MotionHandler struct {
@@ -17,17 +18,26 @@ func NewMotionHandler(useCase *usecase.MotionUseCase) *MotionHandler {
 }
 
 func (h *MotionHandler) HandleMotion(w http.ResponseWriter, r *http.Request) {
-	motionDetected, intensity := simulator.SimulateMotion()
 
-	if err := h.useCase.Execute(motionDetected, intensity); err != nil {
+	var sensor domain.MotionSensor
+	if err := json.NewDecoder(r.Body).Decode(&sensor); err != nil {
+		http.Error(w, "Error decoding request body", http.StatusBadRequest)
+		return
+	}
+
+
+	if sensor.Timestamp.IsZero() {
+		sensor.Timestamp = time.Now()
+	}
+
+	
+	if err := h.useCase.Execute(sensor.MotionDetected, sensor.Intensity); err != nil {
 		http.Error(w, "Error processing motion sensor", http.StatusInternalServerError)
 		return
 	}
 
-	response := map[string]interface{}{
-		"motion_detected": motionDetected,
-		"intensity":       intensity,
-	}
+	
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(sensor)
 }
